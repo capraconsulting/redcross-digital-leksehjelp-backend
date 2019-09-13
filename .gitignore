@@ -1,0 +1,11 @@
+.idea/
+*.iml
+target/
+config_override/
+tags
+
+Docker/server/app\.jar
+
+\.projections\.json
+
+\.DS_Store

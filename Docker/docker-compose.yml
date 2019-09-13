@@ -1,0 +1,28 @@
+version: '3'
+services:
+    init-db:
+        image: microsoft/mssql-server-linux:latest
+        command: sh -c 'sleep 40 && /opt/mssql-tools/bin/sqlcmd -S 127.0.0.1,8000 -U SA -P Password1 -Q "CREATE DATABASE $${DATABASE}"'
+        network_mode: service:db
+        environment:
+            - DATABASE=TestDB
+    db:
+        build:
+            context: db/
+            dockerfile: Dockerfile
+        image: redcross-db
+        environment:
+            - ACCEPT_EULA=Y
+            - SA_PASSWORD=Password1
+            - MSSQL_TCP_PORT=8000
+        ports:
+            - "8000:8000"
+    server:
+        build: 
+            context: server/
+            dockerfile: Dockerfile
+        image: redcross-backend
+        ports:
+            - "8080:8080"
+            - "3002:3002"
+

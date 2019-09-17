@@ -25,7 +25,7 @@ public class PropertiesHelper {
         Properties properties = new Properties();
         properties.putAll(getPropertiesFromClasspathFile("application.properties"));
         properties.putAll(getPropertiesFromOptionalClasspathFile("application-test.properties"));
-        properties.putAll(getPropertiesFromFile(new File("config_override/application.properties")));
+        properties.putAll(getPropertiesFromFile(new File("application-override.properties")));
         return properties;
     }
 

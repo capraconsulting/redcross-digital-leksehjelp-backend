@@ -11,7 +11,7 @@ set -x
 # The properties with path $AZURE_KEYVAULT_PATH will be written to $AZURE_KEYVAULT_OUTPUTPATH
 # The path is stripped to the output. eg /dev/myapp/db.password=1234 is added to the file as db.password=1234.
 if [ "$AZURE_KEYVAULT_ENABLED" = "true" ]; then
-    mkdir -p "$(dirname "$AZURE_KEYVAULT_OUTPUTPATH")"
+    touch $AZURE_KEYVAULT_OUTPUTPATH
     if python3 GetSecretsFromKeyVault.py $AZURE_KEYVAULT_PATH $AZURE_KEYVAULT_OUTPUTPATH; then
         echo 'GetSecretsFromKeyVault.py exited successfully!'
     else

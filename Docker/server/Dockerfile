@@ -1,12 +1,12 @@
 FROM openjdk:11-jre-slim
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-		python \
-		python-setuptools \
-		python-pip \
+		python3 \
+		python3-setuptools \
+		python3-pip \
 	&& rm -rf /var/lib/apt/lists/* \
-  && pip install awscli \
-  && pip install boto3 \
+  && pip3 install azure-keyvault \
+  && pip3 install msrestazure \
   && rm -rf ~/.cache/pip
 
 ENV JAVA_HOME=/usr/lib/jvm/java-1.8-openjdk \
@@ -19,7 +19,7 @@ RUN useradd $USER
 ## PREREQUISITE:
 ##    Docker cannot access contents outside, so this must be run when building:
 ##    $ cp -p "../target/$(ls -t ../target/*.jar | grep -v /orig | head -1)" app.jar
-COPY GetPropertiesFromParameterStore.py runapp.sh app.jar wordlist $HOME/
+COPY GetSecretsFromKeyVault.py runapp.sh app.jar wordlist $HOME/
 
 ## Create directory for holding application logs and configure permissions
 ## Configure permissions

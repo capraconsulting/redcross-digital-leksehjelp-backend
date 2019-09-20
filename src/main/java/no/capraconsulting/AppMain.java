@@ -1,6 +1,7 @@
 package no.capraconsulting;
 
 import no.capraconsulting.chat.ChatServer;
+import no.capraconsulting.chat.ChatServlet;
 import no.capraconsulting.config.JerseyConfig;
 import no.capraconsulting.config.JsonJettyErrorHandler;
 import no.capraconsulting.config.PropertiesHelper;
@@ -57,8 +58,8 @@ public class AppMain {
         // Add Jersey servlet to the Jetty context
         ServletHolder jerseyServlet = new ServletHolder(new ServletContainer(new JerseyConfig(properties)));
         contextHandler.addServlet(jerseyServlet, "/*");
-        //contextHandler.addServlet(ChatEndpoint.class.getName(), "/ws");
-
+        ServletHolder chatServlet = new ServletHolder("ws-events", ChatServlet.class);
+        contextHandler.addServlet(chatServlet, "/ws");
         // Error responses as application/json with proper charset
         contextHandler.setErrorHandler(new JsonJettyErrorHandler());
 

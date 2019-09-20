@@ -11,6 +11,8 @@ import javax.ws.rs.container.ContainerResponseFilter;
  * This filter is optionally enabled and wired in {@link JerseyConfig}
  * See {@link JerseyConfig} for details about properties used to control allowed origin and headers
  */
+
+// TODO: Sandra til prod, sett opp hvilke domener som skal tillates (både frivillig-frontend og student-frontend)
 public class CORSFilter implements ContainerResponseFilter {
     private static final Logger log = LoggerFactory.getLogger(CORSFilter.class);
 

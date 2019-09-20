@@ -18,11 +18,10 @@ services:
         ports:
             - "8000:8000"
     server:
-        build: 
+        build:
             context: server/
             dockerfile: Dockerfile
         image: redcross-backend
         ports:
             - "8080:8080"
-            - "3002:3002"
 

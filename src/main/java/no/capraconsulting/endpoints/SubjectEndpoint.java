@@ -1,5 +1,6 @@
 package no.capraconsulting.endpoints;
 
+import no.capraconsulting.chat.ChatEndpoint;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
@@ -65,6 +66,45 @@ public final class SubjectEndpoint {
             return Response.status(422).build();
         }
 
+    }
+
+    @GET
+    @Path("active")
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response getActiveSubjects(@QueryParam("isMestring") int isMestring) {
+        String query = "" +
+            "SELECT Volunteer_Subjects.volunteer_id, Volunteer_Subjects.subject_id, Subjects.subject " +
+            "FROM VOLUNTEER_SUBJECTS Volunteer_Subjects " +
+            "JOIN SUBJECTS Subjects ON Volunteer_Subjects.subject_id = Subjects.id " +
+            "WHERE is_mestring = ?";
+
+        try {
+            RowSet result = Database.INSTANCE.selectQuery(query, isMestring);
+            Map<Integer, JSONObject> activeSubjects = new HashMap<Integer, JSONObject>();
+
+            while (result.next()) {
+                int subjectID = result.getInt("subject_id");
+                String volunteerID = result.getString("volunteer_id");
+                String subjectTitle = result.getString("subject");
+                JSONObject subject = activeSubjects.getOrDefault(subjectID, new JSONObject());
+
+                ChatEndpoint.activeVolunteers.entrySet().forEach(entry -> {
+                    if (volunteerID.equals(entry.getValue().getId())) {
+                        subject.put("id", subjectID);
+                        subject.put("subject", subjectTitle);
+                        subject.put("isMestring", isMestring);
+                    }
+                });
+                activeSubjects.put(subjectID, subject);
+            }
+            LOG.info("Active subjects are:");
+            LOG.info(activeSubjects.values().toString());
+
+            return Response.ok(activeSubjects.values().toString()).build();
+        } catch (SQLException e) {
+            LOG.error(e.getMessage());
+            return Response.status(422).build();
+        }
     }
 
     @POST

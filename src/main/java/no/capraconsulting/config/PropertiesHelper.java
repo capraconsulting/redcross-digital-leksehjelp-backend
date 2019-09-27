@@ -20,6 +20,9 @@ public class PropertiesHelper {
     public static final String AZURE_AUTH_ISSUER = "azure.auth.issuer";
     public static final String AZURE_AUTH_AUDIENCE = "azure.auth.audience";
     public static final String MIXPANEL_PROJECT_TOKEN = "mixpanel.project.token";
+    public static final String MAIL_USERNAME = "mail.username";
+    public static final String MAIL_PASSWORD = "mail.password";
+    public static final String MAIL_APIKEY = "mail.apikey";
 
     public static Properties getProperties() {
         Properties properties = new Properties();

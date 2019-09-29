@@ -5,6 +5,7 @@ public class LeaveMessage extends Message {
     protected String name;
     protected String roomID;
     protected String removedBy;
+    private long volunteerCount;
 
     public String getName() {
         return name;
@@ -21,6 +22,7 @@ public class LeaveMessage extends Message {
         private String name;
         private String roomID;
         private String removedBy;
+        private long volunteerCount;
 
         public T withName(String name) {
             this.name = name;
@@ -34,6 +36,11 @@ public class LeaveMessage extends Message {
 
         public T withRemovedBy(String removedBy) {
             this.removedBy = removedBy;
+            return self();
+        }
+
+        public T withVolunteerCount(long volunteerCount) {
+            this.volunteerCount = volunteerCount;
             return self();
         }
 
@@ -54,6 +61,7 @@ public class LeaveMessage extends Message {
         this.name = init.name;
         this.roomID = init.roomID;
         this.removedBy = init.removedBy;
+        this.volunteerCount = init.volunteerCount;
     }
 
 }

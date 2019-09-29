@@ -50,14 +50,12 @@ public class RemoveEndedChats extends Thread {
                                 if (first.isVolunteer()) {
                                     ChatEndpoint.dispatchLeaveMessage(
                                         String.format("%s har forlatt Chatten", first.getVolunteer().getName()),
-                                        room.getKey(),
-                                        false
+                                        room.getKey()
                                     );
                                 } else {
                                     ChatEndpoint.dispatchLeaveMessage(
                                         "Student har forlatt Chatten",
-                                        room.getKey(),
-                                        true
+                                        room.getKey()
                                     );
                                 }
                             }

@@ -1,17 +1,17 @@
 package no.capraconsulting.chatmessages;
 
-import java.util.List;
+import java.util.Set;
 
 public class ActiveSubjectsMessage extends Message {
-    private List<String> activeSubjects;
+    private Set<String> activeSubjects;
 
-    private List<String> getActiveSubjects() { return this.activeSubjects; }
+    private Set<String> getActiveSubjects() { return this.activeSubjects; }
 
     protected static abstract class Init<T extends Init<T>> extends Message.Init<T> {
 
-        private List<String> activeSubjects;
+        private Set<String> activeSubjects;
 
-        public T activeSubjects(List<String> activeSubjects) {
+        public T activeSubjects(Set<String> activeSubjects) {
             this.activeSubjects = activeSubjects;
             return self();
         }

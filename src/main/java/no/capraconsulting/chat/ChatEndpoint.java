@@ -196,13 +196,11 @@ public class ChatEndpoint extends WebSocketAdapter {
     }
 
     private static SocketMessage getActiveSubjectsMessage() {
-        List<String> activeSubjects = getActiveSubjects();
-
         return SocketMessage.Builder.newInstance()
             .withMsgType(Msg.MessageEnum.UPDATE_ACTIVE_SUBJECTS)
             .withPayload(
                 new ActiveSubjectsMessage.Builder()
-                    .activeSubjects(activeSubjects)
+                    .activeSubjects(getActiveSubjects())
                     .build())
             .build();
     }
@@ -325,40 +323,25 @@ public class ChatEndpoint extends WebSocketAdapter {
             }
         }
 
-        SocketMessage returnMsg;
+        RoomMessage.Builder payloadBuilder = new RoomMessage.Builder()
+            .withUniqueID(payload.getUniqueID())
+            .withRoomID(roomID)
+            .withStudentID(studentID)
+            .withVolName(payload.getVolName())
+            .withVolunteerCount(1L);
 
         if ((studentInfo.getChatType() == Chat.ChatTypeEnum.LEKSEHJELP_VIDEO)
             || (studentInfo.getChatType() == Chat.ChatTypeEnum.MESTRING_VIDEO)) {
             // With talkyID
             String talkyID = generateID();
-            returnMsg =
-                SocketMessage.Builder.newInstance()
-                    .withMsgType(Msg.MessageEnum.DISTRIBUTE_ROOM)
-                    .withPayload(
-                        new RoomMessage.Builder()
-                            .withUniqueID(payload.getUniqueID())
-                            .withRoomID(roomID)
-                            .withStudentID(studentID)
-                            .withTalkyID(talkyID)
-                            .withVolName(payload.getVolName())
-                            .build())
-                    .build();
-            LOG.info("Video Chat created, id:");
-            LOG.info(talkyID);
-        } else {
-            // without talkyID
-            returnMsg =
-                SocketMessage.Builder.newInstance()
-                    .withMsgType(Msg.MessageEnum.DISTRIBUTE_ROOM)
-                    .withPayload(
-                        new RoomMessage.Builder()
-                            .withUniqueID(payload.getUniqueID())
-                            .withRoomID(roomID)
-                            .withStudentID(studentID)
-                            .withVolName(payload.getVolName())
-                            .build())
-                    .build();
+            payloadBuilder.withTalkyID(talkyID);
+            LOG.info("Video Chat created, id: {}", talkyID);
         }
+
+        SocketMessage returnMsg = SocketMessage.Builder.newInstance()
+            .withMsgType(Msg.MessageEnum.DISTRIBUTE_ROOM)
+            .withPayload(payloadBuilder.build())
+            .build();
 
         mixpanelService.trackEventWithStudentInformation(MixpanelEvent.VOLUNTEER_STARTED_HELP, studentInfo);
         ChatEndpoint.rooms.put(roomID, al);
@@ -374,6 +357,7 @@ public class ChatEndpoint extends WebSocketAdapter {
         queue.remove(studentID);
 
         ChatEndpoint.updatePositionsInQueue();
+        sendUpdateQueueMessageToVolunteers();
     }
 
     private void addToChat(String msg) {
@@ -417,7 +401,7 @@ public class ChatEndpoint extends WebSocketAdapter {
                         .withTalkyID(talkyID)
                         .withStudentInfo(payload.getStudentInfo())
                         .withChatHistory(payload.getChatHistory())
-                        .withVolunteerCount(payload.getVolunteerCount())
+                        .withVolunteerCount(sumVolunteersInRoom(roomID))
                         .build())
                 .build();
 
@@ -454,17 +438,6 @@ public class ChatEndpoint extends WebSocketAdapter {
         Volunteer volunteer = ChatEndpoint.activeVolunteers.get(uniqueID);
         StudentInfo studentInfo = payload.getStudentInfo();
 
-        SocketMessage confirmation =
-            SocketMessage.Builder.newInstance()
-                .withMsgType(Msg.MessageEnum.LEAVE_CHAT)
-                .withPayload(
-                    new LeaveMessage.Builder()
-                        .withName(volunteer.getName())
-                        .withRoomID(roomID)
-                        .withUniqueID(uniqueID)
-                        .build())
-                .build();
-
         long chatDuration = TimeUnit.MILLISECONDS.toMinutes(
             System.currentTimeMillis() - studentsEnteredChat.get(studentInfo.getUniqueID())
         );
@@ -472,17 +445,33 @@ public class ChatEndpoint extends WebSocketAdapter {
         try {
             List<String> room = ChatEndpoint.rooms.get(roomID);
 
+            SocketMessage.Builder confirmationBuilder = SocketMessage.Builder.newInstance()
+                .withMsgType(Msg.MessageEnum.LEAVE_CHAT);
+
+            LeaveMessage.Builder payloadBuilder = new LeaveMessage.Builder()
+                .withName(volunteer.getName())
+                .withRoomID(roomID)
+                .withUniqueID(uniqueID);
+
             boolean found = false;
             for (Iterator<String> it = room.iterator(); it.hasNext() && !found; ) {
                 String userID = it.next();
                 if (userID.equals(uniqueID)) {
                     found = true;
+                    room.remove(userID);
+
+                    // Create confirmation _after_ removing user from room
+                    SocketMessage confirmation = confirmationBuilder
+                        .withPayload(
+                            payloadBuilder
+                                .withVolunteerCount(sumVolunteersInRoom(roomID))
+                                .build()
+                        ).build();
                     for (String userIDToSendConfirmationMessageTo : room) {
                         ChatEndpoint.sockets
                             .get(userIDToSendConfirmationMessageTo)
                             .sendClient(ChatUtils.stringify(confirmation));
                     }
-                    room.remove(userID);
                     LOG.info("User has left the room");
                     LOG.info(uniqueID);
                 }
@@ -613,7 +602,13 @@ public class ChatEndpoint extends WebSocketAdapter {
         LOG.info(uniqueID);
     }
 
-    static void dispatchLeaveMessage(String message, String roomID, boolean isStudent) {
+    private static long sumVolunteersInRoom(String roomId) {
+        return ChatEndpoint.rooms.get(roomId).stream()
+            .filter(ChatEndpoint.activeVolunteers::containsKey)
+            .count();
+    }
+
+    static void dispatchLeaveMessage(String message, String roomID) {
         List<String> room = ChatEndpoint.rooms.get(roomID);
         room.forEach(
             uid -> ChatEndpoint.sockets.get(uid).sendClient(
@@ -625,7 +620,7 @@ public class ChatEndpoint extends WebSocketAdapter {
                                 .withUniqueID("NOTIFICATION")
                                 .withMessage(message)
                                 .withRoomID(roomID)
-                                .withVolunteerCount(isStudent ? room.size() : room.size() - 1)
+                                .withVolunteerCount(sumVolunteersInRoom(roomID))
                                 .build())
                         .build()))
         );
@@ -661,8 +656,7 @@ public class ChatEndpoint extends WebSocketAdapter {
                     ChatEndpoint.rooms.get(room.getKey()).remove(leaveMessage.getUniqueID());
                     ChatEndpoint.dispatchLeaveMessage(
                         "Student har forlatt rommet",
-                        room.getKey(),
-                        true
+                        room.getKey()
                     );
                 }
                 if (!leftRoom) {

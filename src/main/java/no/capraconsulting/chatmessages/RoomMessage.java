@@ -12,7 +12,7 @@ public class RoomMessage extends Message {
     private List<TextMessage> chatHistory;
     private String talkyID;
     protected String author;
-    private Integer volunteerCount;
+    private long volunteerCount;
 
     public String getVolName() {
         return volName;
@@ -41,7 +41,7 @@ public class RoomMessage extends Message {
     public void setAuthor(String author) { this.author = author;}
     public String getAuthor(){ return author; }
 
-    public Integer getVolunteerCount() {
+    public long getVolunteerCount() {
         return volunteerCount;
     }
 
@@ -53,7 +53,7 @@ public class RoomMessage extends Message {
         private String talkyID;
         private StudentInfo studentInfo;
         private List<TextMessage> chatHistory;
-        private Integer volunteerCount;
+        private long volunteerCount;
 
         public T withStudentID(String studentID) {
             this.studentID = studentID;
@@ -85,7 +85,7 @@ public class RoomMessage extends Message {
             return self();
         }
 
-        public T withVolunteerCount(Integer volunteerCount) {
+        public T withVolunteerCount(long volunteerCount) {
             this.volunteerCount = volunteerCount;
             return self();
         }

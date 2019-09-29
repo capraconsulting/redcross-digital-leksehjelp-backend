@@ -12,6 +12,7 @@ public class ChatServlet extends WebSocketServlet {
     public void configure(WebSocketServletFactory factory)
     {
         factory.getPolicy().setIdleTimeout(TIMEOUT_LIMIT);
+        factory.getExtensionFactory().unregister("permessage-deflate");
         factory.register(ChatEndpoint.class);
         RemoveEndedChats gc = new RemoveEndedChats();
         LOG.info("Started garbage collector");

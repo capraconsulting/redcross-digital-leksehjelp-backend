@@ -22,6 +22,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static no.capraconsulting.utils.EndpointUtils.getActiveSubjects;
+
 public class ChatEndpoint extends WebSocketAdapter {
 
     private static Logger LOG = LoggerFactory.getLogger(ChatEndpoint.class);
@@ -125,6 +127,7 @@ public class ChatEndpoint extends WebSocketAdapter {
             if (activeVolunteers.containsKey(this.id)) {
                 Volunteer volunteer = activeVolunteers.remove(this.id);
                 closedChat.setVolunteer(volunteer);
+                sendUpdateActiveSubjects();
             }
 
             closedChat.run();
@@ -145,7 +148,12 @@ public class ChatEndpoint extends WebSocketAdapter {
         SocketMessage msg =
             SocketMessage.Builder.newInstance()
                 .withMsgType(Msg.MessageEnum.CONNECTION)
-                .withPayload(new Message.Builder().withUniqueID(this.id).build())
+                .withPayload(
+                    new ActiveSubjectsMessage.Builder()
+                        .withUniqueID(this.id)
+                        .activeSubjects(getActiveSubjects())
+                        .build()
+                )
                 .build();
 
         this.sendClient(ChatUtils.stringify(msg));
@@ -176,6 +184,27 @@ public class ChatEndpoint extends WebSocketAdapter {
         vol.setChatID(this.id);
         volunteer = true;
         activeVolunteers.put(vol.getChatID(), vol);
+
+        sendUpdateActiveSubjects();
+    }
+
+    private void sendUpdateActiveSubjects() {
+        String message = ChatUtils.stringify(getActiveSubjectsMessage());
+        ChatEndpoint.sockets.keySet().forEach(key -> ChatEndpoint.sockets.get(key).sendClient(
+            message
+        ));
+    }
+
+    private static SocketMessage getActiveSubjectsMessage() {
+        List<String> activeSubjects = getActiveSubjects();
+
+        return SocketMessage.Builder.newInstance()
+            .withMsgType(Msg.MessageEnum.UPDATE_ACTIVE_SUBJECTS)
+            .withPayload(
+                new ActiveSubjectsMessage.Builder()
+                    .activeSubjects(activeSubjects)
+                    .build())
+            .build();
     }
 
     private void textMessageHandler(String msg) {
@@ -422,6 +451,7 @@ public class ChatEndpoint extends WebSocketAdapter {
         RoomMessage payload = gson.fromJson(message, RoomMessage.class);
         String roomID = payload.getRoomID();
         String uniqueID = payload.getUniqueID();
+        Volunteer volunteer = ChatEndpoint.activeVolunteers.get(uniqueID);
         StudentInfo studentInfo = payload.getStudentInfo();
 
         SocketMessage confirmation =
@@ -429,7 +459,7 @@ public class ChatEndpoint extends WebSocketAdapter {
                 .withMsgType(Msg.MessageEnum.LEAVE_CHAT)
                 .withPayload(
                     new LeaveMessage.Builder()
-                        .withName(payload.getAuthor())
+                        .withName(volunteer.getName())
                         .withRoomID(roomID)
                         .withUniqueID(uniqueID)
                         .build())
@@ -535,12 +565,12 @@ public class ChatEndpoint extends WebSocketAdapter {
         List<StudentInfo> studentInfoList = new ArrayList<>(ChatEndpoint.waitingRooms.values());
 
         return SocketMessage.Builder.newInstance()
-                .withMsgType(Msg.MessageEnum.QUEUE_LIST)
-                .withPayload(
-                    new QueueListMessage.Builder()
-                        .queueMembers(studentInfoList)
-                        .build())
-                .build();
+            .withMsgType(Msg.MessageEnum.QUEUE_LIST)
+            .withPayload(
+                new QueueListMessage.Builder()
+                    .queueMembers(studentInfoList)
+                    .build())
+            .build();
     }
 
     private void reconnectHandler(String msg) {

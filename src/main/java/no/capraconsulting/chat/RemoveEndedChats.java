@@ -24,6 +24,7 @@ public class RemoveEndedChats extends Thread {
         timer.scheduleAtFixedRate(
             new TimerTask() {
                 public void run() {
+                    boolean queueUpdated = false;
                     for (Iterator<ClosedChat> it =
                          ChatEndpoint.reconnectList.values().iterator();
                          it.hasNext(); ) {
@@ -35,6 +36,7 @@ public class RemoveEndedChats extends Thread {
                                 ChatEndpoint.waitingRooms.remove(first.getChat().getId());
                             if (removedFromWaitingRoom != null) {
                                 ChatEndpoint.updatePositionsInQueue();
+                                queueUpdated = true;
                             }
 
                             for (ConcurrentMap.Entry<String, List<String>> room :
@@ -63,7 +65,9 @@ public class RemoveEndedChats extends Thread {
                         }
                     }
 
-                    ChatEndpoint.sendUpdateQueueMessageToVolunteers();
+                    if (queueUpdated) {
+                        ChatEndpoint.sendUpdateQueueMessageToVolunteers();
+                    }
                 }
             },
             delay,

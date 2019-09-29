@@ -1,5 +1,6 @@
 package no.capraconsulting.utils;
 
+import no.capraconsulting.chat.ChatEndpoint;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import javax.sql.RowSet;
@@ -8,6 +9,9 @@ import java.sql.SQLException;
 import com.google.common.base.CaseFormat;
 import no.capraconsulting.mail.MailService;
 import no.capraconsulting.db.Database;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -28,25 +32,25 @@ public final class EndpointUtils {
      * @return Formatted JSONArray of the query result
      */
     public static JSONArray buildPayload(RowSet result) throws SQLException {
-        
+
         JSONArray payload = new JSONArray();
         ResultSetMetaData rsmd = result.getMetaData();
 
         while (result.next()) {
             JSONObject obj = new JSONObject();
-            int columnCount = rsmd.getColumnCount(); 
-            
+            int columnCount = rsmd.getColumnCount();
+
             for (int i = 1; i <= columnCount; i++ ) {
                 String name = rsmd.getColumnName(i);
                 String formattedName = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, name);
-                obj.put(formattedName, result.getObject(name)); 
+                obj.put(formattedName, result.getObject(name));
             }
 
             payload.put(obj);
         }
-        
+
         return payload;
-    } 
+    }
 
     /**
      * Utility method for validationg a state transition, valid state transitions for
@@ -84,7 +88,7 @@ public final class EndpointUtils {
                     return false;
                 }
                 return true;
-            } 
+            }
             return false;
         } catch (SQLException e) {
             LOG.error(e.getMessage());
@@ -126,5 +130,33 @@ public final class EndpointUtils {
         } catch (SQLException e) {
             LOG.error(e.getMessage());
         }
+    }
+
+    public static List<String> getActiveSubjects() {
+        String query = "" +
+            "SELECT Volunteer_Subjects.volunteer_id, Volunteer_Subjects.subject_id, Subjects.subject " +
+            "FROM VOLUNTEER_SUBJECTS Volunteer_Subjects " +
+            "JOIN SUBJECTS Subjects ON Volunteer_Subjects.subject_id = Subjects.id ";
+
+        List<String> activeSubjects = new ArrayList<>();
+        try {
+            RowSet result = Database.INSTANCE.selectQuery(query);
+
+            while (result.next()) {
+                String volunteerID = result.getString("volunteer_id");
+                String subjectTitle = result.getString("subject");
+
+                ChatEndpoint.activeVolunteers.entrySet().forEach(entry -> {
+                    if (volunteerID.equals(entry.getValue().getId())) {
+                        activeSubjects.add(subjectTitle);
+                    }
+                });
+            }
+            LOG.info("Active subjects are:");
+            LOG.info(activeSubjects.toString());
+        } catch (SQLException e) {
+            LOG.error(e.getMessage());
+        }
+        return activeSubjects;
     }
 }

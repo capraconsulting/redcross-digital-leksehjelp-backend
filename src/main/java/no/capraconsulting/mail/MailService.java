@@ -60,18 +60,6 @@ public class MailService implements Callable<Response>{
             sg.api(request);
 
             return Response.ok("Mail successfully sent!").build();
-            /*HtmlEmail email = new HtmlEmail();
-            email.setHostName(HOST);
-            email.setSmtpPort(PORT);
-            email.setAuthenticator(new DefaultAuthenticator(userName, password));
-            email.setSSLOnConnect(SSL_FLAG);
-            email.setFrom(userName, fromAddress);
-            email.setSubject(subject);
-            email.setHtmlMsg(message);
-            email.setTextMsg("Your email client does not support HTML");
-            email.addTo(toAddress);
-            email.send();
-            return Response.ok("Mail successfully sent!").build();*/
         }catch(Exception ex){
             LOG.error("Unable to send mail");
             LOG.error(ex.getMessage());

@@ -23,7 +23,7 @@ public class Database {
     public static Database INSTANCE = new Database();
     private static Logger LOG = LoggerFactory.getLogger(Database.class);
     private DataSource dataSource;
-    
+
     /**
      * This constructor initiates the single INSTANCE of the Database
      * while Hikari manages the connection to the DB, and pooling/caching
@@ -38,10 +38,13 @@ public class Database {
         String database = getProperty(properties, PropertiesHelper.DB_NAME);
         String user = getProperty(properties, PropertiesHelper.DB_USER);
         String password = getProperty(properties, PropertiesHelper.DB_PASSWORD);
+        String environment = getProperty(properties, PropertiesHelper.ENVIRONMENT);
 
-        String url = String.format("jdbc:sqlserver://%s:%s;database=%s;user=%s;password=%s;encrypt=true;" +
-                "trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30",
-            name, port, database, user, password);
+        String url = environment.equals("prod")
+            ? String.format("jdbc:sqlserver://%s:%s;database=%s;user=%s;password=%s;encrypt=true;" +
+                    "trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30",
+                name, port, database, user, password)
+            : String.format("jdbc:sqlserver://%s:%s;databaseName=%s", name, port, database);
 
         config.setJdbcUrl(url);
         config.setUsername(user);
@@ -51,7 +54,7 @@ public class Database {
         config.addDataSourceProperty("prepStmtCacheSize", "250");
         config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
 
-        this.dataSource = new HikariDataSource(config);  
+        this.dataSource = new HikariDataSource(config);
     }
 
     /**
@@ -76,7 +79,7 @@ public class Database {
             CachedRowSet crs = factory.createCachedRowSet();
             crs.populate(result);
             return crs;
-        } finally { 
+        } finally {
             if (result != null) {
                 try {
                     result.close();
@@ -132,7 +135,7 @@ public class Database {
     public DataSource getDataSource() {
         return this.dataSource;
     }
-    
+
     // Helpers
     private String getProperty(Properties properties, String property) {
         return PropertiesHelper.getStringProperty(properties, property, null);

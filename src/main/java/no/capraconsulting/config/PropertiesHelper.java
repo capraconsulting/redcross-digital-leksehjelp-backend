@@ -23,6 +23,7 @@ public class PropertiesHelper {
     public static final String MAIL_USERNAME = "mail.username";
     public static final String MAIL_PASSWORD = "mail.password";
     public static final String MAIL_APIKEY = "mail.apikey";
+    public static final String ENVIRONMENT = "environment";
 
     public static Properties getProperties() {
         Properties properties = new Properties();

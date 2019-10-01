@@ -13,6 +13,7 @@ public class TextMessage extends Message{
     private String imgUrl;
     private String author;
     private String roomID;
+    private long volunteerCount;
 
     public String getMessage() {
         return message;
@@ -23,6 +24,10 @@ public class TextMessage extends Message{
     public String getAuthor() { return author; }
 
     public String getRoomID(){ return roomID; }
+
+    public long getVolunteerCount() {
+        return volunteerCount;
+    }
 
     public ArrayList<File> getFiles() {
         return files;
@@ -35,6 +40,7 @@ public class TextMessage extends Message{
         private String imgUrl;
         private String author;
         private String roomID;
+        private long volunteerCount;
 
         public T withMessage(String message) {
             this.message = message;
@@ -60,6 +66,12 @@ public class TextMessage extends Message{
             this.imgUrl = imgUrl;
             return self();
         }
+
+        public T withVolunteerCount(long volunteerCount) {
+            this.volunteerCount = volunteerCount;
+            return self();
+        }
+
         public TextMessage build() {
             return new TextMessage(this);
         }
@@ -79,5 +91,6 @@ public class TextMessage extends Message{
         this.files = init.files;
         this.imgUrl = init.imgUrl;
         this.roomID = init.roomID;
+        this.volunteerCount = init.volunteerCount;
     }
 }

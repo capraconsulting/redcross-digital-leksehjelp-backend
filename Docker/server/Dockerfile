@@ -28,7 +28,6 @@ RUN chmod 755 $HOME/*.sh && \
 
 ## Expose application port
 EXPOSE 8080
-EXPOSE 3002
 
 USER $USER
 WORKDIR /home/$USER

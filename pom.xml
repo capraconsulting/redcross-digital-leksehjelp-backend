@@ -57,6 +57,11 @@
       <artifactId>jaxb-api</artifactId>
       <version>2.2.11</version>
     </dependency>
+    <dependency>
+      <groupId>com.microsoft.azure</groupId>
+      <artifactId>adal4j</artifactId>
+      <version>1.6.0</version>
+    </dependency>
     <!-- We need this because reasons -->
     <dependency>
       <groupId>org.glassfish.jaxb</groupId>
@@ -149,6 +154,11 @@
       <version>3.3.1</version>
     </dependency>
     <!-- Mail -->
+    <dependency>
+      <groupId>com.sendgrid</groupId>
+      <artifactId>sendgrid-java</artifactId>
+      <version>4.4.1</version>
+    </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-email</artifactId>

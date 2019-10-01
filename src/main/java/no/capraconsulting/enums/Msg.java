@@ -21,5 +21,6 @@ public interface Msg {
         SET_VOLUNTEER,
         STUDENT_LEAVE,
         REMOVE_STUDENT_FROM_QUEUE,
+        UPDATE_ACTIVE_SUBJECTS,
     }
 }

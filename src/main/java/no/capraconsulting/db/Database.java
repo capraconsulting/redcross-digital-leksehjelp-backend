@@ -34,12 +34,15 @@ public class Database {
 
         Properties properties = PropertiesHelper.getProperties();
         String name = getProperty(properties, PropertiesHelper.DB_CONTAINER_NAME);
-        String port = getProperty(properties, PropertiesHelper.DB_PORT); 
-        String database = getProperty(properties, PropertiesHelper.DB_NAME); 
+        String port = getProperty(properties, PropertiesHelper.DB_PORT);
+        String database = getProperty(properties, PropertiesHelper.DB_NAME);
         String user = getProperty(properties, PropertiesHelper.DB_USER);
         String password = getProperty(properties, PropertiesHelper.DB_PASSWORD);
 
-        String url = String.format("jdbc:sqlserver://%s:%s;databaseName=%s", name, port, database);        
+        String url = String.format("jdbc:sqlserver://%s:%s;database=%s;user=%s;password=%s;encrypt=true;" +
+                "trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30",
+            name, port, database, user, password);
+
         config.setJdbcUrl(url);
         config.setUsername(user);
         config.setPassword(password);

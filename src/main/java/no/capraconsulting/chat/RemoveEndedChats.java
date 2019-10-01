@@ -22,46 +22,53 @@ public class RemoveEndedChats extends Thread {
         timer = new Timer();
 
         timer.scheduleAtFixedRate(
-                new TimerTask() {
-                    public void run() {
-                        for (Iterator<ClosedChat> it =
-                                        ChatEndpoint.reconnectList.values().iterator();
-                                it.hasNext(); ) {
-                            ClosedChat first = it.next();
-                            if (first.isTimesUp()) {
-                                ChatEndpoint.reconnectList.values().remove(first);
+            new TimerTask() {
+                public void run() {
+                    boolean queueUpdated = false;
+                    for (Iterator<ClosedChat> it =
+                         ChatEndpoint.reconnectList.values().iterator();
+                         it.hasNext(); ) {
+                        ClosedChat first = it.next();
+                        if (first.isTimesUp()) {
+                            ChatEndpoint.reconnectList.values().remove(first);
 
-                                StudentInfo removedFromWaitingRoom =
-                                        ChatEndpoint.waitingRooms.remove(first.getChat().getId());
-                                if (removedFromWaitingRoom != null) {
-                                    ChatEndpoint.updatePositionsInQueue();
-                                }
-
-                                for (ConcurrentMap.Entry<String, List<String>> room :
-                                        ChatEndpoint.rooms.entrySet()) {
-                                    if (!room.getValue().contains(first.getChat().getId())) {
-                                        continue;
-                                    }
-                                    ChatEndpoint.rooms
-                                            .get(room.getKey())
-                                            .remove(first.getChat().getId());
-                                    if (first.isVolunteer()) {
-                                        ChatEndpoint.dispatchLeaveMessage(
-                                                String.format(
-                                                        "%s har forlatt Chatten",
-                                                        first.getVolunteer().getName()),
-                                                room.getValue(), room.getKey());
-                                    } else {
-                                        ChatEndpoint.dispatchLeaveMessage(
-                                                "Student har forlatt Chatten", room.getValue(), room.getKey());
-                                    }
-                                }
-                                LOG.info("Fjernet fra liste");
+                            StudentInfo removedFromWaitingRoom =
+                                ChatEndpoint.waitingRooms.remove(first.getChat().getId());
+                            if (removedFromWaitingRoom != null) {
+                                ChatEndpoint.updatePositionsInQueue();
+                                queueUpdated = true;
                             }
+
+                            for (ConcurrentMap.Entry<String, List<String>> room :
+                                ChatEndpoint.rooms.entrySet()) {
+                                if (!room.getValue().contains(first.getChat().getId())) {
+                                    continue;
+                                }
+                                ChatEndpoint.rooms
+                                    .get(room.getKey())
+                                    .remove(first.getChat().getId());
+                                if (first.isVolunteer()) {
+                                    ChatEndpoint.dispatchLeaveMessage(
+                                        String.format("%s har forlatt Chatten", first.getVolunteer().getName()),
+                                        room.getKey()
+                                    );
+                                } else {
+                                    ChatEndpoint.dispatchLeaveMessage(
+                                        "Student har forlatt Chatten",
+                                        room.getKey()
+                                    );
+                                }
+                            }
+                            LOG.info("Fjernet fra liste");
                         }
                     }
-                },
-                delay,
-                period);
+
+                    if (queueUpdated) {
+                        ChatEndpoint.sendUpdateQueueMessageToVolunteers();
+                    }
+                }
+            },
+            delay,
+            period);
     }
 }

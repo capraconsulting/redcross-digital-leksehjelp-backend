@@ -24,6 +24,7 @@ public class PropertiesHelper {
     public static final String MAIL_PASSWORD = "mail.password";
     public static final String MAIL_APIKEY = "mail.apikey";
     public static final String ENVIRONMENT = "environment";
+    public static final String NICKNAME_COUNTER_MAX = "nickname.counter.max";
 
     public static Properties getProperties() {
         Properties properties = new Properties();

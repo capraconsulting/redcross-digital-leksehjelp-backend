@@ -5,6 +5,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import no.capraconsulting.chatmessages.*;
+import no.capraconsulting.config.PropertiesHelper;
 import no.capraconsulting.enums.Chat;
 import no.capraconsulting.enums.MixpanelEvent;
 import no.capraconsulting.enums.Msg;
@@ -20,6 +21,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static no.capraconsulting.utils.EndpointUtils.getActiveSubjects;
@@ -39,6 +41,14 @@ public class ChatEndpoint extends WebSocketAdapter {
     static final ConcurrentMap<String, ClosedChat> reconnectList = new ConcurrentHashMap<>();
 
     public static final ConcurrentMap<String, Volunteer> activeVolunteers = new ConcurrentHashMap<>();
+
+    public static AtomicInteger studentNicknameCounter = new AtomicInteger(1);
+
+    private static int studentNicknameCounterMaxValue = PropertiesHelper.getIntProperty(
+        PropertiesHelper.getProperties(),
+        PropertiesHelper.NICKNAME_COUNTER_MAX,
+        Integer.MAX_VALUE
+    );
 
     // <uniqueID, Long> TODO: Sandra, et ConcurrentMap som holder på studentID og når student entret chat. Må tømmes når får timeout når leksehjelp er stengt, og student må fjernes når chat med student lukkes.
     static final ConcurrentMap<String, Long> studentsEnteredChat = new ConcurrentHashMap<>();
@@ -425,8 +435,12 @@ public class ChatEndpoint extends WebSocketAdapter {
 
         StudentInfo user = gson.fromJson(message, StudentInfo.class);
         user.setUniqueID(id);
-        // TODO: Quick fix before demo please
-        user.setNickname("TODO: Autogenerert studentnavn");
+
+        int nicknameCounter = studentNicknameCounter.getAndIncrement();
+        if (nicknameCounter >= studentNicknameCounterMaxValue) {
+            studentNicknameCounter.set(1);
+        }
+        user.setNickname(String.format("Elev #%s", nicknameCounter));
 
         return user;
     }

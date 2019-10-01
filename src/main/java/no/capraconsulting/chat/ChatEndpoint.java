@@ -247,7 +247,10 @@ public class ChatEndpoint extends WebSocketAdapter {
                     .withPayload(textMessage)
                     .build();
 
-            ChatEndpoint.sockets.get(socketID).sendClient(ChatUtils.stringify(socketMessage));
+            Optional.ofNullable(ChatEndpoint.sockets.get(socketID))
+                .ifPresent(endpoint ->
+                    endpoint.sendClient(ChatUtils.stringify(socketMessage))
+                );
         }
     }
 
@@ -554,7 +557,9 @@ public class ChatEndpoint extends WebSocketAdapter {
 
     void sendClient(String str) {
         try {
-            this.session.getRemote().sendString(str);
+            if (this.session.isOpen()) {
+                this.session.getRemote().sendString(str);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -649,7 +654,7 @@ public class ChatEndpoint extends WebSocketAdapter {
     //TODO: Sandra, del opp i to funksjoner
     private void studentLeaveHandler(String msg) {
         LeaveMessage leaveMessage = gson.fromJson(msg, LeaveMessage.class);
-        boolean isRemovedByVolunteer = leaveMessage.getRemovedBy().equals("volunteer");
+        boolean isRemovedByVolunteer = "volunteer".equals(leaveMessage.getRemovedBy());
 
         try {
             if (isRemovedByVolunteer) {

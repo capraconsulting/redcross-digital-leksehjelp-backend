@@ -105,7 +105,7 @@ public final class EndpointUtils {
      * @param questionID ID of the question which is being checked
      * @return Formatted JSONArray of the query result
      */
-    public static void sendMail(int questionID) {
+    public static boolean sendMail(int questionID) {
         // Should send the mail and delete it after
         String selectQuery = "" +
             "SELECT * FROM Questions " +
@@ -127,9 +127,14 @@ public final class EndpointUtils {
 
                 executor.submit(mailService);
                 executor.shutdown();
+
+                return true;
             }
+
+            return false;
         } catch (SQLException e) {
             LOG.error(e.getMessage());
+            return false;
         }
     }
 

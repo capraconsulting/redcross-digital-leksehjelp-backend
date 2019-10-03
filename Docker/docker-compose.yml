@@ -17,11 +17,11 @@ services:
             - MSSQL_TCP_PORT=8000
         ports:
             - "8000:8000"
-#    server:
-#        build:
-#            context: server/
-#            dockerfile: Dockerfile
-#        image: redcross-backend
-#        ports:
-#            - "8080:8080"
+    server:
+        build:
+            context: server/
+            dockerfile: Dockerfile
+        image: redcross-backend
+        ports:
+            - "8080:8080"
 

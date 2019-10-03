@@ -385,8 +385,10 @@ public final class QuestionEndpoint {
 
             // Send the mail if the question was approved
             if (new_state == 4) {
-                EndpointUtils.sendMail(questionID);
-                mixpanelService.trackEvent(MixpanelEvent.VOLUNTEER_APPROVED_QUESTION, data);
+                boolean sent = EndpointUtils.sendMail(questionID);
+                if (sent) {
+                    mixpanelService.trackEvent(MixpanelEvent.VOLUNTEER_APPROVED_QUESTION, data);
+                }
             }
 
             return Response.status(200).build();

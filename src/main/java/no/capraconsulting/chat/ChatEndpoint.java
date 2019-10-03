@@ -70,14 +70,13 @@ public class ChatEndpoint extends WebSocketAdapter {
 
     @Override
     public void onWebSocketText(String message) {
-
+        LOG.info("Retrieved socket message with message: " + message);
         JsonParser parser = new JsonParser();
         JsonObject jsonMsg = (JsonObject) parser.parse(message);
         String payload = jsonMsg.get("payload").toString();
         JsonElement msgType = jsonMsg.get("msgType");
         Msg.MessageEnum type = gson.fromJson(msgType.toString(), Msg.MessageEnum.class);
 
-        LOG.info(message);
         LOG.info(type.name());
 
         switch (type) {
@@ -128,7 +127,7 @@ public class ChatEndpoint extends WebSocketAdapter {
 
     @Override
     public void onWebSocketClose(int statusCode, String reason) {
-
+        LOG.info("onWebSocketClose() called, status code: " + statusCode + ", reason: " + reason);
         if (ChatEndpoint.sockets.containsKey(this.id)) {
             // remove connection
             LOG.info("Disconnecting socket");
@@ -556,6 +555,7 @@ public class ChatEndpoint extends WebSocketAdapter {
     }
 
     void sendClient(String str) {
+        LOG.info("Send following message to client: " + str);
         try {
             LOG.info("sendClient [isOpen={}]", this.session.isOpen());
             if (this.session.isOpen()) {

@@ -1,5 +1,5 @@
 # Base OS layer: Latest Ubuntu LTS
-FROM ubuntu:16.04
+FROM ubuntu:16.10
 
 # Setup locales
 # install necessary locales

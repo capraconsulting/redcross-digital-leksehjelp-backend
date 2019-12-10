@@ -49,6 +49,7 @@ public class MailService implements Callable<Response>{
 
         try {
             Email email = new Email(ADDRESS, fromAddress);
+            email.setName("Digital Leksehjelp");
             Content content = new Content("text/html", message);
             Mail mail = new Mail(email, subject, toAddress, content);
             SendGrid sg = new SendGrid(apiKey);

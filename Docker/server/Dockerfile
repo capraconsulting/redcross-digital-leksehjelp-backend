@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 	&& rm -rf /var/lib/apt/lists/* \
   && pip3 install azure-keyvault \
   && pip3 install msrestazure \
+  && pip3 install pyopenssl \
   && rm -rf ~/.cache/pip
 
 ENV JAVA_HOME=/usr/lib/jvm/java-1.8-openjdk \

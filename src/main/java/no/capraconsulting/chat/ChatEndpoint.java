@@ -70,14 +70,13 @@ public class ChatEndpoint extends WebSocketAdapter {
 
     @Override
     public void onWebSocketText(String message) {
-
+        LOG.info("Retrieved socket message with message: " + message);
         JsonParser parser = new JsonParser();
         JsonObject jsonMsg = (JsonObject) parser.parse(message);
         String payload = jsonMsg.get("payload").toString();
         JsonElement msgType = jsonMsg.get("msgType");
         Msg.MessageEnum type = gson.fromJson(msgType.toString(), Msg.MessageEnum.class);
 
-        LOG.info(message);
         LOG.info(type.name());
 
         switch (type) {
@@ -128,7 +127,7 @@ public class ChatEndpoint extends WebSocketAdapter {
 
     @Override
     public void onWebSocketClose(int statusCode, String reason) {
-
+        LOG.info("onWebSocketClose() called, status code: " + statusCode + ", reason: " + reason);
         if (ChatEndpoint.sockets.containsKey(this.id)) {
             // remove connection
             LOG.info("Disconnecting socket");
@@ -194,11 +193,12 @@ public class ChatEndpoint extends WebSocketAdapter {
         vol.setChatID(this.id);
         volunteer = true;
         activeVolunteers.put(vol.getChatID(), vol);
-
+        LOG.info("The number of active volunteers is :" + activeVolunteers.size());
         sendUpdateActiveSubjects();
     }
 
     private void sendUpdateActiveSubjects() {
+        LOG.info("Send the active subjects to all connected sockets");
         String message = ChatUtils.stringify(getActiveSubjectsMessage());
         ChatEndpoint.sockets.keySet().forEach(key -> ChatEndpoint.sockets.get(key).sendClient(
             message
@@ -359,7 +359,6 @@ public class ChatEndpoint extends WebSocketAdapter {
         mixpanelService.trackEventWithStudentInformation(MixpanelEvent.VOLUNTEER_STARTED_HELP, studentInfo);
         ChatEndpoint.rooms.put(roomID, al);
         LOG.info("New chat room created");
-        LOG.info(returnMsg.toString());
 
         for (String socketID : ChatEndpoint.rooms.get(roomID)) {
             ChatEndpoint.sockets.get(socketID).sendClient(ChatUtils.stringify(returnMsg));
@@ -455,10 +454,6 @@ public class ChatEndpoint extends WebSocketAdapter {
         Volunteer volunteer = ChatEndpoint.activeVolunteers.get(uniqueID);
         StudentInfo studentInfo = payload.getStudentInfo();
 
-        long chatDuration = TimeUnit.MILLISECONDS.toMinutes(
-            System.currentTimeMillis() - studentsEnteredChat.get(studentInfo.getUniqueID())
-        );
-
         try {
             List<String> room = ChatEndpoint.rooms.get(roomID);
 
@@ -511,6 +506,10 @@ public class ChatEndpoint extends WebSocketAdapter {
                         .sendClient(ChatUtils.stringify(chatClosedMessage));
                 }
 
+                long chatDuration = TimeUnit.MILLISECONDS.toMinutes(
+                    System.currentTimeMillis() - studentsEnteredChat.get(studentInfo.getUniqueID())
+                );
+
                 if (chatDuration > 4) {
                     mixpanelService.trackEventWithDuration(
                         MixpanelEvent.VOLUNTEER_FINISHED_HELP,
@@ -556,12 +555,14 @@ public class ChatEndpoint extends WebSocketAdapter {
     }
 
     void sendClient(String str) {
+        LOG.info("Send following message to client: " + str);
         try {
+            LOG.info("sendClient [isOpen={}]", this.session.isOpen());
             if (this.session.isOpen()) {
                 this.session.getRemote().sendString(str);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            LOG.error(e.getMessage(), e);
         }
     }
 
@@ -658,7 +659,7 @@ public class ChatEndpoint extends WebSocketAdapter {
 
         try {
             if (isRemovedByVolunteer) {
-                ChatEndpoint.updatePositionsInQueue();//TODO: Sandra, burde denne kalles før vi fjerner elev fra waitingRoom?
+                ChatEndpoint.updatePositionsInQueue();
                 Message message = gson.fromJson(msg, Message.class);
                 StudentInfo studentInfo = ChatEndpoint.waitingRooms.remove(message.getUniqueID());
                 mixpanelService.trackEventWithStudentInformation(MixpanelEvent.VOLUNTEER_REMOVED_STUDENT_FROM_QUEUE, studentInfo);
@@ -679,8 +680,10 @@ public class ChatEndpoint extends WebSocketAdapter {
                     );
                 }
                 if (!leftRoom) {
-                    ChatEndpoint.updatePositionsInQueue();//TODO: Sandra, burde denne kalles før vi fjerner elev fra waitingRoom?
-                    mixpanelService.trackEventWithStudentInformation(MixpanelEvent.STUDENT_LEFT_QUEUE, studentInfo);
+                    ChatEndpoint.updatePositionsInQueue();
+                    if (studentInfo != null) {
+                        mixpanelService.trackEventWithStudentInformation(MixpanelEvent.STUDENT_LEFT_QUEUE, studentInfo);
+                    }
                 }
             }
 

@@ -9,6 +9,8 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -36,7 +38,7 @@ public final class SubjectEndpoint {
             "WHERE is_mestring = ?";
 
         try {
-            RowSet result  = Database.INSTANCE.selectQuery(query, isMestring);
+            RowSet result = Database.INSTANCE.selectQuery(query, isMestring);
             Map<Integer, JSONObject> subjects = new HashMap<Integer, JSONObject>();
 
             while (result.next()) {
@@ -64,20 +66,18 @@ public final class SubjectEndpoint {
             LOG.error(e.getMessage());
             return Response.status(422).build();
         }
-
     }
 
     @POST
     @Produces({MediaType.APPLICATION_JSON})
     @Consumes({MediaType.APPLICATION_JSON})
     @JwtFilter
-    public Response postSubject(String payload){
-
+    public Response postSubject(String payload) {
         JSONObject data = new JSONObject(payload);
 
         String query = "INSERT INTO "
-                      + "SUBJECTS (subject, is_mestring) "
-                      + "VALUES (?, ?)";
+            + "SUBJECTS (subject, is_mestring) "
+            + "VALUES (?, ?)";
 
         try {
             int isMestring;
@@ -87,6 +87,26 @@ public final class SubjectEndpoint {
                 isMestring = data.getInt("isMestring");
             }
             Database.INSTANCE.manipulateQuery(query, false, data.getString("subjectTitle"), isMestring);
+            return Response.status(200).build();
+        } catch (SQLException e) {
+            LOG.error(e.getMessage());
+            return Response.status(422).build();
+        }
+    }
+
+    @DELETE
+    @Path("/{id}")
+    @Produces({MediaType.APPLICATION_JSON})
+    @Consumes({MediaType.APPLICATION_JSON})
+    @JwtFilter
+    public Response deleteSubject(@PathParam("id") Integer id) {
+
+        String deleteSubjectThemes = "DELETE FROM THEMES WHERE subject_id = ?";
+        String deleteSubject = "DELETE FROM SUBJECTS WHERE id = ?";
+
+        try {
+            Database.INSTANCE.manipulateQuery(deleteSubjectThemes, false, id);
+            Database.INSTANCE.manipulateQuery(deleteSubject, false, id);
             return Response.status(200).build();
         } catch (SQLException e) {
             LOG.error(e.getMessage());

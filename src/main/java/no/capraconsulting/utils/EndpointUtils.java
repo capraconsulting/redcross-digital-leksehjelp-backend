@@ -167,4 +167,11 @@ public final class EndpointUtils {
         }
         return activeSubjects;
     }
+
+    public static JSONObject getWithQuery(String query) throws SQLException {
+            RowSet result = Database.INSTANCE.selectQuery(query);
+            JSONArray temp = EndpointUtils.buildPayload(result);
+            JSONObject payload = temp.getJSONObject(0);
+            return payload;
+    }
 }

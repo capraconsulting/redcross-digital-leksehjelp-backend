@@ -5,12 +5,10 @@ import no.capraconsulting.auth.JwtFilter;
 import no.capraconsulting.db.Database;
 import no.capraconsulting.domain.Information;
 import no.capraconsulting.utils.EndpointUtils;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.sql.RowSet;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -19,16 +17,23 @@ import java.util.*;
 
 @Path("/information")
 public class OpenLeksehjelpEndpoint {
-    private static boolean IS_OPEN = false;
     private Logger LOG = LoggerFactory.getLogger(OpenLeksehjelpEndpoint.class);
     private static final Gson gson = new Gson();
 
-    /*@GET
+    @GET
     @Produces({MediaType.APPLICATION_JSON})
+    @Path("/isopen")
     public Response getIsOpen() {
-        JSONObject responseObject = new JSONObject().put("isopen", OpenLeksehjelpEndpoint.IS_OPEN);
-        return Response.ok(responseObject.toString()).build();
-    }*/
+        String query = "SELECT JSON_VALUE(data, '$.isOpen') AS 'isOpen' FROM INFORMATION";
+
+        try {
+            JSONObject response = EndpointUtils.getWithQuery(query);
+            return Response.ok(response.toString()).build();
+        } catch (SQLException e) {
+           LOG.error(e.getMessage());
+           return Response.status(422).build();
+        }
+    }
 
     @GET
     @Produces({MediaType.APPLICATION_JSON})
@@ -36,10 +41,8 @@ public class OpenLeksehjelpEndpoint {
         String query = "SELECT data FROM INFORMATION;";
 
         try {
-            RowSet result = Database.INSTANCE.selectQuery(query);
-            JSONArray temp = EndpointUtils.buildPayload(result);
-            JSONObject payload = temp.getJSONObject(0);
-            return Response.ok(payload.get("data").toString()).build();
+            JSONObject payload  = EndpointUtils.getWithQuery(query);
+            return Response.ok(payload.get("data")).build();
         } catch (SQLException e) {
             LOG.error(e.getMessage());
             return Response.status(422).build();
@@ -70,13 +73,11 @@ public class OpenLeksehjelpEndpoint {
     @Produces({MediaType.APPLICATION_JSON})
     public Response updateIsOpen(String payload) {
         JSONObject data = new JSONObject(payload);
+        String insertInformation = "UPDATE INFORMATION SET data=JSON_MODIFY(data, '$.isOpen', ?)";
 
         try {
-            String insertInformation = "UPDATE INFORMATION SET data=JSON_MODIFY(data, '$.isOpen', ?)";
             Database.INSTANCE.manipulateQuery(insertInformation, false, data.getBoolean("isOpen"));
-
-            JSONObject responseObject = new JSONObject().put("isopen", OpenLeksehjelpEndpoint.IS_OPEN);
-            return Response.ok(responseObject.toString()).build();
+            return Response.ok(data.toString()).build();
         } catch (SQLException e) {
             LOG.error(e.getMessage());
             return Response.status(422).build();
@@ -115,18 +116,4 @@ public class OpenLeksehjelpEndpoint {
         return Response.status(200).build();
     }
 
-
-   /* @POST
-    @JwtFilter
-    @Produces({MediaType.APPLICATION_JSON})
-    public Response toggleIsOpen() {
-        OpenLeksehjelpEndpoint.IS_OPEN = !OpenLeksehjelpEndpoint.IS_OPEN;
-        JSONObject responseObject = new JSONObject().put("isopen", OpenLeksehjelpEndpoint.IS_OPEN);
-        if (IS_OPEN) {
-            LOG.info("Leksehjelpen er åpnet");
-        } else {
-            LOG.info("Leksehjelpen er stengt");
-        }
-        return Response.ok(responseObject.toString()).build();
-    }*/
 }

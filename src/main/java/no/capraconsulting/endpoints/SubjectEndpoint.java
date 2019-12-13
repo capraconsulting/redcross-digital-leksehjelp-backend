@@ -100,13 +100,12 @@ public final class SubjectEndpoint {
     @Consumes({MediaType.APPLICATION_JSON})
     @JwtFilter
     public Response deleteSubject(@PathParam("id") Integer id) {
-
-        String deleteSubjectThemes = "DELETE FROM THEMES WHERE subject_id = ?";
-        String deleteSubject = "DELETE FROM SUBJECTS WHERE id = ?";
+        String deleteSubject = "DELETE FROM THEMES WHERE subject_id = ?; " +
+            "DELETE FROM VOLUNTEER_SUBJECTS WHERE subject_id = ?; " +
+            "DELETE FROM SUBJECTS WHERE id = ?;";
 
         try {
-            Database.INSTANCE.manipulateQuery(deleteSubjectThemes, false, id);
-            Database.INSTANCE.manipulateQuery(deleteSubject, false, id);
+            Database.INSTANCE.manipulateQuery(deleteSubject, false, id, id, id);
             return Response.status(200).build();
         } catch (SQLException e) {
             LOG.error(e.getMessage());

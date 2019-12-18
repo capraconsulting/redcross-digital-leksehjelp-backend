@@ -7,28 +7,39 @@ import org.json.JSONArray;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.ws.rs.InternalServerErrorException;
 import java.sql.SQLException;
 
 public class AdminRepository {
     private static Logger LOG = LoggerFactory.getLogger(AdminRepository.class);
 
-    public static JSONArray getUserRole(String volunteer_id) throws SQLException  {
+    public static JSONArray getUserRole(String volunteer_id)  {
         String query = "SELECT ROLE AS 'role' FROM VOLUNTEERS WHERE id = ?";
         try {
             return EndpointUtils.buildPayload(Database.INSTANCE.selectQuery(query, volunteer_id));
         } catch (SQLException e ) {
             LOG.error(e.getMessage());
-            throw e;
+            throw new InternalServerErrorException("Failed to execute query: ", e);
         }
     }
 
-    public static void changeUserRole(String volunteer_id, VolunteerRole role) throws SQLException {
+    public static void changeUserRole(String volunteer_id, VolunteerRole role) {
         String query = "UPDATE VOLUNTEERS SET ROLE = ? WHERE id = ? ";
-        Database.INSTANCE.manipulateQuery(query, false, role.toString(), volunteer_id);
+        try {
+            Database.INSTANCE.manipulateQuery(query, false, role.toString(), volunteer_id);
+        } catch (SQLException e ) {
+            LOG.error(e.getMessage());
+            throw new InternalServerErrorException("Failed to execute query: ", e);
+        }
     }
 
-    public static void addVolunteer(String id, String name, String email, VolunteerRole role) throws SQLException {
+    public static void addVolunteer(String id, String name, String email, VolunteerRole role) {
         String query = "INSERT INTO VOLUNTEERS VALUES (?, ?, ?, ?, ?, ?);";
-        Database.INSTANCE.manipulateQuery(query, false, id, name, "", "", email, role.toString());
+        try {
+            Database.INSTANCE.manipulateQuery(query, false, id, name, "", "", email, role.toString());
+        } catch (SQLException e ) {
+           LOG.error(e.getMessage());
+           throw new InternalServerErrorException("Failed to execute query: ", e);
+        }
     }
 }

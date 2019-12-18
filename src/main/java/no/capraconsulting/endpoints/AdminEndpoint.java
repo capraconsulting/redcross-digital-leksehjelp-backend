@@ -24,7 +24,7 @@ public class AdminEndpoint {
     @Path("/volunteerrole/{userId}")
     @Produces({MediaType.APPLICATION_JSON})
     @Consumes({MediaType.APPLICATION_JSON})
-    public Response changeUserRole(@PathParam("userId") String userId, String payload) throws SQLException {
+    public Response changeUserRole(@PathParam("userId") String userId, String payload) {
         Role role = gson.fromJson(payload, Role.class);
         AdminRepository.changeUserRole(userId, VolunteerRole.valueOf(role.role));
         String userRole = AdminRepository.getUserRole(userId).toString();
@@ -33,7 +33,7 @@ public class AdminEndpoint {
 
     @GET
     @Path("/volunteerrole/{userId}")
-    public Response getUserRole(@PathParam("userId") String userId) throws SQLException {
+    public Response getUserRole(@PathParam("userId") String userId) {
         return Response.ok(AdminRepository.getUserRole(userId).toString()).build();
     }
 
@@ -42,11 +42,10 @@ public class AdminEndpoint {
     @Path("/volunteer/")
     @Produces({MediaType.APPLICATION_JSON})
     @Consumes({MediaType.APPLICATION_JSON})
-    public Response addVolunteer(String payload) throws SQLException {
+    public Response addVolunteer(String payload) {
         Volunteer volunteer = gson.fromJson(payload, Volunteer.class);
         String id = ""; //get id from Azure Active Directory
         AdminRepository.addVolunteer(id, volunteer.name, volunteer.email, volunteer.role);
         return Response.ok().build();
     }
-
 }

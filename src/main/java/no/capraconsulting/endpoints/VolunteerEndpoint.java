@@ -31,10 +31,12 @@ public final class VolunteerEndpoint {
     @GET
     @Produces({MediaType.APPLICATION_JSON})
     public Response listVolunteers(@Context ContainerRequestContext requestContext, @QueryParam("allVolunteers") boolean allVolunteers) {
-        String query =
-            "SELECT Volunteers.id, name, bio_text, email, img_url " +
-            "FROM Volunteers";
 
+        String query = "SELECT vo.id, vo.name, vo.bio_text, vo.email, vo.img_url, vo.role, STRING_AGG(ISNULL(su.subject, ''), ', ') as subjects " +
+            "FROM Volunteers vo " +
+        "LEFT OUTER JOIN VOLUNTEER_SUBJECTS vs ON vo.id=vs.volunteer_id " +
+        "LEFT OUTER JOIN SUBJECTS su ON vs.subject_id=su.id " +
+        "GROUP BY vo.id, vo.name, vo.bio_text, vo.email, vo.img_url, vo.role;";
         try {
             RowSet result = Database.INSTANCE.selectQuery(query);
             JSONArray payload = EndpointUtils.buildPayload(result);

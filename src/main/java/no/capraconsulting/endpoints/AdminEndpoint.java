@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import no.capraconsulting.auth.AdminFilter;
 import no.capraconsulting.auth.JwtFilter;
 import no.capraconsulting.domain.Role;
+import no.capraconsulting.domain.Volunteer;
 import no.capraconsulting.domain.VolunteerRole;
 import no.capraconsulting.repository.AdminRepository;
 
@@ -34,6 +35,18 @@ public class AdminEndpoint {
     @Path("/volunteerrole/{userId}")
     public Response getUserRole(@PathParam("userId") String userId) throws SQLException {
         return Response.ok(AdminRepository.getUserRole(userId).toString()).build();
+    }
+
+
+    @POST
+    @Path("/volunteer/")
+    @Produces({MediaType.APPLICATION_JSON})
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response addVolunteer(String payload) throws SQLException {
+        Volunteer volunteer = gson.fromJson(payload, Volunteer.class);
+        String id = ""; //get id from Azure Active Directory
+        AdminRepository.addVolunteer(id, volunteer.name, volunteer.email, volunteer.role);
+        return Response.ok().build();
     }
 
 }

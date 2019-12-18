@@ -26,4 +26,9 @@ public class AdminRepository {
         String query = "UPDATE VOLUNTEERS SET ROLE = ? WHERE id = ? ";
         Database.INSTANCE.manipulateQuery(query, false, role.toString(), volunteer_id);
     }
+
+    public static void addVolunteer(String id, String name, String email, VolunteerRole role) throws SQLException {
+        String query = "INSERT INTO VOLUNTEERS VALUES (?, ?, ?, ?, ?, ?);";
+        Database.INSTANCE.manipulateQuery(query, false, id, name, "", "", email, role.toString());
+    }
 }

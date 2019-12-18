@@ -79,7 +79,8 @@ public class DatabaseInitializer {
             "name VARCHAR(255), " +
             "bio_text VARCHAR(1000)," +
             "img_url VARCHAR(1000)," +
-            "email VARCHAR(255))";
+            "email VARCHAR(255)," +
+            "role VARCHAR(255))";
 
         String volunteerSubjectsTable = "CREATE TABLE VOLUNTEER_SUBJECTS" +
             "(subject_id INTEGER not null FOREIGN KEY REFERENCES SUBJECTS(id), " +

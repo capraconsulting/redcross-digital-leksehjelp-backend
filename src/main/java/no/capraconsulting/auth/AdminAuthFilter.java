@@ -1,14 +1,20 @@
 package no.capraconsulting.auth;
 
 
+import com.google.gson.Gson;
+import no.capraconsulting.domain.Role;
+import no.capraconsulting.domain.Volunteer;
+import no.capraconsulting.domain.VolunteerRole;
 import no.capraconsulting.repository.AdminRepository;
 import org.jose4j.jwt.JwtClaims;
 import org.jose4j.jwt.MalformedClaimException;
 import org.json.JSONArray;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Priority;
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
@@ -21,6 +27,7 @@ import java.sql.SQLException;
 @AdminFilter
 @Priority(Priorities.AUTHORIZATION)
 public class AdminAuthFilter implements ContainerRequestFilter {
+    private static Gson gson = new Gson();
 
     private static Logger LOG = LoggerFactory.getLogger(JwtAuthFilter.class);
     @Override
@@ -34,15 +41,14 @@ public class AdminAuthFilter implements ContainerRequestFilter {
             requestContext.abortWith(Response.status(Response.Status.BAD_REQUEST).build());
         }
 
-        if(oid == null){
+        if (oid == null) {
             requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
         } else {
-            try {
-                JSONArray test = AdminRepository.getUserRole(oid);
-                LOG.debug(test.toString());
-            } catch (SQLException e) {
-                LOG.error(e.getMessage());
-                requestContext.abortWith(Response.status(Response.Status.INTERNAL_SERVER_ERROR).build());
+            JSONArray json = AdminRepository.getUserRole(oid);
+            String jsonString = json.get(0).toString();
+            Role role = gson.fromJson(jsonString, Role.class);
+            if (! role.getRole().equals(VolunteerRole.ADMIN.toString())) {
+                requestContext.abortWith(Response.status(Response.Status.UNAUTHORIZED).build());
             }
         }
     }

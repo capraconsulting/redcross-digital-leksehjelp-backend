@@ -48,4 +48,11 @@ public class AdminEndpoint {
         AdminRepository.addVolunteer(id, volunteer.name, volunteer.email, volunteer.role);
         return Response.ok().build();
     }
+
+    @DELETE
+    @Path("/volunteer/{userId}")
+    public Response deleteVolunteer(@PathParam("userId") String userId) {
+        AdminRepository.deleteVolunteer(userId);
+       return Response.ok().build();
+    }
 }

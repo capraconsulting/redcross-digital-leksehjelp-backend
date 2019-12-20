@@ -42,4 +42,14 @@ public class AdminRepository {
            throw new InternalServerErrorException("Failed to execute query: ", e);
         }
     }
+
+    public static void deleteVolunteer(String id) {
+        String query = "DELETE FROM VOLUNTEERS WHERE id = ?";
+        try {
+            Database.INSTANCE.manipulateQuery(query, false, id);
+        } catch (SQLException e) {
+            LOG.error(e.getMessage());
+            throw new InternalServerErrorException("Failed to execute query");
+        }
+    }
 }

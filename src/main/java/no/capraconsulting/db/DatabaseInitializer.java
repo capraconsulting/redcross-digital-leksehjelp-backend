@@ -84,7 +84,7 @@ public class DatabaseInitializer {
 
         String volunteerSubjectsTable = "CREATE TABLE VOLUNTEER_SUBJECTS" +
             "(subject_id INTEGER not null FOREIGN KEY REFERENCES SUBJECTS(id), " +
-            "volunteer_id VARCHAR(255) not null FOREIGN KEY REFERENCES VOLUNTEERS(id), " +
+            "volunteer_id VARCHAR(255) not null FOREIGN KEY REFERENCES VOLUNTEERS(id) ON DELETE CASCADE, " +
             "PRIMARY KEY (subject_id, volunteer_id))";
 
         // Init the database

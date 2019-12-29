@@ -18,6 +18,8 @@ import static no.capraconsulting.utils.EndpointUtils.parseMSGraphPayload;
 
 
 @Path("/admin")
+@AdminFilter
+@JwtFilter
 public class AdminEndpoint {
     private static Gson gson = new Gson();
     private MSGraphClient client = new MSGraphClient();

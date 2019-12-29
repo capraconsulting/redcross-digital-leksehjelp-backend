@@ -49,7 +49,7 @@ public class AdminRepository {
             Database.INSTANCE.manipulateQuery(query, false, id);
         } catch (SQLException e) {
             LOG.error(e.getMessage());
-            throw new InternalServerErrorException("Failed to execute query");
+            throw new InternalServerErrorException("Failed to execute query ", e);
         }
     }
 }

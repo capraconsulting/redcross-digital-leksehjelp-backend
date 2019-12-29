@@ -6,6 +6,7 @@ public class Volunteer {
     public String email;
     public VolunteerRole role;
 
+
     public String getName() {
         return name;
     }
@@ -26,7 +27,6 @@ public class Volunteer {
         return role;
     }
 
-    public void setRole(VolunteerRole role) {
-        this.role = role;
-    }
+    public void setRole(VolunteerRole role) { this.role = role; }
+
 }

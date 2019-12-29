@@ -1,8 +1,10 @@
 package no.capraconsulting.endpoints;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import no.capraconsulting.auth.AdminFilter;
 import no.capraconsulting.auth.JwtFilter;
+import no.capraconsulting.client.MSGraphClient;
 import no.capraconsulting.domain.Role;
 import no.capraconsulting.domain.Volunteer;
 import no.capraconsulting.domain.VolunteerRole;
@@ -11,14 +13,14 @@ import no.capraconsulting.repository.AdminRepository;
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.sql.SQLException;
+
+import static no.capraconsulting.utils.EndpointUtils.parseMSGraphPayload;
 
 
 @Path("/admin")
-@AdminFilter
-@JwtFilter
 public class AdminEndpoint {
     private static Gson gson = new Gson();
+    private MSGraphClient client = new MSGraphClient();
 
     @POST
     @Path("/volunteerrole/{userId}")
@@ -44,8 +46,9 @@ public class AdminEndpoint {
     @Consumes({MediaType.APPLICATION_JSON})
     public Response addVolunteer(String payload) {
         Volunteer volunteer = gson.fromJson(payload, Volunteer.class);
-        String id = ""; //get id from Azure Active Directory
-        AdminRepository.addVolunteer(id, volunteer.name, volunteer.email, volunteer.role);
+        JsonObject apiPayload = client.getUserIdByEmail(volunteer.email);
+        String volunteerId = parseMSGraphPayload(apiPayload);
+        AdminRepository.addVolunteer(volunteerId, volunteer.name, volunteer.email, volunteer.role);
         return Response.ok().build();
     }
 

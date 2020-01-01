@@ -25,6 +25,11 @@ public class PropertiesHelper {
     public static final String MAIL_APIKEY = "mail.apikey";
     public static final String ENVIRONMENT = "environment";
     public static final String NICKNAME_COUNTER_MAX = "nickname.counter.max";
+    private static String CLIENT_ID = "msgraph.auth.client.id";
+    private static String SCOPE = "msgraph.auth.scope";
+    private static String CLIENT_SECRET = "msgraph.auth.client.secret";
+    private static String TENANT_GUID = "msgraph.auth.tenant.guid";
+    private static String AUTHORITY = "msgraph.auth.authority.url";
 
     public static Properties getProperties() {
         Properties properties = new Properties();

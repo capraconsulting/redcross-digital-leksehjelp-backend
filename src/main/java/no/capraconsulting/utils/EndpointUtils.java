@@ -1,5 +1,8 @@
 package no.capraconsulting.utils;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import no.capraconsulting.chat.ChatEndpoint;
 import no.capraconsulting.chatmessages.Volunteer;
 import org.json.JSONArray;
@@ -166,6 +169,14 @@ public final class EndpointUtils {
             LOG.error("SQLException", e);
         }
         return activeSubjects;
+    }
+
+
+    public static String parseMSGraphPayload(JsonObject payload) {
+        JsonArray values = payload.get("value").getAsJsonArray();
+        JsonElement first = values.get(0);
+        String id = first.getAsJsonObject().get("id").getAsString();
+        return id;
     }
 
     public static JSONObject getWithQuery(String query) throws SQLException {

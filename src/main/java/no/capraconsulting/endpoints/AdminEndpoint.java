@@ -5,12 +5,14 @@ import com.google.gson.JsonObject;
 import no.capraconsulting.auth.AdminFilter;
 import no.capraconsulting.auth.JwtFilter;
 import no.capraconsulting.client.MSGraphClient;
+import no.capraconsulting.domain.Information;
 import no.capraconsulting.domain.Role;
 import no.capraconsulting.domain.Subject;
 import no.capraconsulting.domain.Theme;
 import no.capraconsulting.domain.Volunteer;
 import no.capraconsulting.domain.VolunteerRole;
 import no.capraconsulting.repository.AdminRepository;
+import org.json.JSONObject;
 
 import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
@@ -93,6 +95,33 @@ public class AdminEndpoint {
     @Path("/themes/{id}")
     public Response deleteTheme(@PathParam("id") Integer id){
         AdminRepository.deleteTheme(id);
+        return Response.ok().build();
+    }
+
+    @PUT
+    @Path("/information/announcement")
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response updateAnnouncement(String payload) {
+        JSONObject data = new JSONObject(payload);
+        AdminRepository.updateAnnouncement(data.getString("announcement"));
+        return Response.ok().build();
+    }
+
+    @PUT
+    @Path("/information/open")
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response updateIsOpen(String payload) {
+        JSONObject data = new JSONObject(payload);
+        AdminRepository.updateIsOpen(data.getBoolean("isOpen"));
+        return Response.ok(data.toString()).build();
+    }
+
+    @PUT
+    @Path("/information/openinghours")
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response updateOpeningHours(String payload) {
+        Information information = gson.fromJson(payload, Information.class);
+        AdminRepository.updateOpeningHours(information);
         return Response.ok().build();
     }
 }

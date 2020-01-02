@@ -178,4 +178,11 @@ public final class EndpointUtils {
         String id = first.getAsJsonObject().get("id").getAsString();
         return id;
     }
+
+    public static JSONObject getWithQuery(String query) throws SQLException {
+            RowSet result = Database.INSTANCE.selectQuery(query);
+            JSONArray temp = EndpointUtils.buildPayload(result);
+            JSONObject payload = temp.getJSONObject(0);
+            return payload;
+    }
 }

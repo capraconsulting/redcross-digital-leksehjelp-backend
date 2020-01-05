@@ -6,6 +6,8 @@ import no.capraconsulting.config.PropertiesHelper;
 import no.capraconsulting.auth.JwtFilter;
 import java.util.List;
 import java.util.Properties;
+import javax.annotation.Priority;
+import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.MultivaluedMap;
@@ -20,6 +22,7 @@ import org.jose4j.keys.resolvers.HttpsJwksVerificationKeyResolver;
 
 @Provider
 @JwtFilter
+@Priority(Priorities.AUTHENTICATION)
 public class JwtAuthFilter implements ContainerRequestFilter {
 
     private static final String AUTH_HEADER_KEY = "Authorization";

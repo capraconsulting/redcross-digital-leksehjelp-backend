@@ -47,7 +47,7 @@ public class DatabasePopulator {
             "VALUES ('Godt spørsmål.', 4)";
         String insertAnswer3 = "INSERT INTO ANSWERS (answer_text, question_id) " +
             "VALUES ('4', 5)";
-        
+
         String insertFeedback1 = "INSERT INTO FEEDBACK (question_id, feedback_text) " +
             "VALUES (4, 'Det der er ikke et ordentlig svar')";
 
@@ -73,9 +73,11 @@ public class DatabasePopulator {
 
         String insertQuestionThemes1 = "INSERT INTO QUESTION_THEMES (question_id, theme_id) VALUES (2, 1)";
 
+        String insertInformation1 = "INSERT INTO INFORMATION (data) VALUES('{\"isOpen\":true,\"announcement\":\"For å være sikrere på at det ikke skal skje tekniske feil, bruk nettlesere som Google Chrome, Firefox eller Opera.\",\"monday\":{\"start\":\"17:00\",\"end\":\"21:00\",\"enabled\":true},\"tuesday\":{\"start\":\"17:00\",\"end\":\"21:00\",\"enabled\":true},\"wednesday\":{\"start\":\"17:00\",\"end\":\"21:00\",\"enabled\":true},\"thursday\":{\"start\":\"17:00\",\"end\":\"21:00\",\"enabled\":true},\"friday\":{\"start\":\"17:00\",\"end\":\"21:00\",\"enabled\":false},\"saturday\":{\"start\":\"16:00\",\"end\":\"21:00\",\"enabled\":false},\"sunday\":{\"start\":\"16:00\",\"end\":\"21:00\",\"enabled\":false},\"other\":{\"enabled\":false,\"message\":\"Sommerstengt\"}}')";
+
         // Init the database
         DatabaseInitializer.init();
-        
+
         // Fill the database with some dummy data
         try {
                 Connection con = Database.INSTANCE.getConnection();
@@ -118,6 +120,7 @@ public class DatabasePopulator {
                 stmt.addBatch(insertTheme19);
                 stmt.addBatch(insertQuestionThemes1);
                 stmt.addBatch(insertFeedback1);
+                stmt.addBatch(insertInformation1);
                 stmt.executeBatch();
                 con.commit();
 
@@ -151,7 +154,7 @@ public class DatabasePopulator {
 
         String insertAnswer = "INSERT INTO ANSWERS (answer_text, question_id, answer_date) " +
             "VALUES (?, ?, ?)";
-        
+
         try {
             int i= 0;
             Random rand = new Random();
@@ -162,10 +165,10 @@ public class DatabasePopulator {
                 String questionText = "";
                 String answerText = "";
                 for (int j = 0; j < numWords; j++) {
-                    questionText += words.get(rand.nextInt(words.size()-1)) + " "; 
-                    answerText += words.get(rand.nextInt(words.size()-1)) + " "; 
+                    questionText += words.get(rand.nextInt(words.size()-1)) + " ";
+                    answerText += words.get(rand.nextInt(words.size()-1)) + " ";
                     if (j % 10 == 0) {
-                        titleText += words.get(rand.nextInt(words.size()-1)) + " "; 
+                        titleText += words.get(rand.nextInt(words.size()-1)) + " ";
                     }
                 }
                 int id = Database.INSTANCE.manipulateQuery(insertQuestion, true,

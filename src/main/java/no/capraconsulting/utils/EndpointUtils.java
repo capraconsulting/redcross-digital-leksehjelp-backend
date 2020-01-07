@@ -1,28 +1,29 @@
 package no.capraconsulting.utils;
 
+import com.google.common.base.CaseFormat;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import no.capraconsulting.chat.ChatEndpoint;
+import no.capraconsulting.chat.state.ActiveVolunteers;
 import no.capraconsulting.chatmessages.Volunteer;
+import no.capraconsulting.db.Database;
+import no.capraconsulting.mail.MailService;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.sql.RowSet;
+import javax.ws.rs.core.Response;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import com.google.common.base.CaseFormat;
-import no.capraconsulting.mail.MailService;
-import no.capraconsulting.db.Database;
-
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import javax.ws.rs.core.Response;
 
 public final class EndpointUtils {
 
@@ -142,7 +143,7 @@ public final class EndpointUtils {
     }
 
     public static Set<String> getActiveSubjects() {
-        if (ChatEndpoint.activeVolunteers.keySet().isEmpty()) {
+        if (ActiveVolunteers.isEmpty()) {
             return Collections.emptySet();
         }
 
@@ -151,9 +152,7 @@ public final class EndpointUtils {
             "FROM VOLUNTEER_SUBJECTS Volunteer_Subjects " +
             "JOIN SUBJECTS Subjects ON Volunteer_Subjects.subject_id = Subjects.id " +
             "WHERE Volunteer_Subjects.volunteer_id IN ('" +
-            ChatEndpoint.activeVolunteers
-                .values()
-                .stream()
+            ActiveVolunteers.stream()
                 .map(Volunteer::getId)
                 .collect(Collectors.joining("','")) +
             "')";

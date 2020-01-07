@@ -26,9 +26,9 @@ public class ClosedChat extends Thread {
         return chat;
     }
 
-    boolean isVolunteer() { return isVolunteer; }
+    public boolean isVolunteer() { return isVolunteer; }
 
-    Volunteer getVolunteer(){ return volunteer; }
+    public Volunteer getVolunteer(){ return volunteer; }
 
     void setVolunteer(Volunteer volunteer){
         this.volunteer = volunteer;

@@ -1,5 +1,6 @@
 package no.capraconsulting.enums;
 
+import no.capraconsulting.chat.ChatType;
 import no.capraconsulting.chat.StudentInfo;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -10,7 +11,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
-import static no.capraconsulting.enums.Chat.ChatTypeEnum.LEKSEHJELP_TEXT;
+import static no.capraconsulting.chat.ChatType.LEKSEHJELP_TEXT;
 
 public enum MixpanelEvent {
     STUDENT_ENTERED_QUEUE("Bedt om leksehjelp", (studentInfo, duration) -> {
@@ -110,7 +111,7 @@ public enum MixpanelEvent {
         return text;
     }
 
-    private static String formatChatType(Chat.ChatTypeEnum type) {
+    private static String formatChatType(ChatType type) {
         switch (type) {
             case LEKSEHJELP_TEXT:
             case MESTRING_TEXT:
@@ -126,17 +127,13 @@ public enum MixpanelEvent {
     private static String formatGrade(int gradeNumber) {
         switch (gradeNumber) {
             case 8:
-                return "8. klasse";
             case 9:
-                return "9. klasse";
             case 10:
-                return "10. klasse";
+                return String.format("%d. klasse", gradeNumber);
             case 11:
-                return "VG1";
             case 12:
-                return "VG2";
             case 13:
-                return "VG3";
+                return String.format("VG%d", gradeNumber - 10);
             default:
                 throw new IllegalArgumentException("Invalid student grade: " + gradeNumber);
         }

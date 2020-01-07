@@ -1,13 +1,13 @@
 package no.capraconsulting.chat;
 
+import no.capraconsulting.chat.messagehandler.MessageHandler;
+import no.capraconsulting.chat.state.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Iterator;
-import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ConcurrentMap;
 
 public class RemoveEndedChats extends Thread {
 
@@ -25,46 +25,40 @@ public class RemoveEndedChats extends Thread {
             new TimerTask() {
                 public void run() {
                     boolean queueUpdated = false;
-                    for (Iterator<ClosedChat> it =
-                         ChatEndpoint.reconnectList.values().iterator();
-                         it.hasNext(); ) {
-                        ClosedChat first = it.next();
-                        if (first.isTimesUp()) {
-                            ChatEndpoint.reconnectList.values().remove(first);
 
-                            StudentInfo removedFromWaitingRoom =
-                                ChatEndpoint.waitingRooms.remove(first.getChat().getId());
+                    for (Map.Entry<String, ClosedChat> entry : ReconnectList.getAll()) {
+                        ClosedChat closedChat = entry.getValue();
+
+                        if (closedChat.isTimesUp()) {
+                            ReconnectList.remove(entry.getKey());
+
+                            String chatId = closedChat.getChat().getId();
+
+                            StudentInfo removedFromWaitingRoom = WaitingRoom.remove(chatId);
+
                             if (removedFromWaitingRoom != null) {
-                                ChatEndpoint.updatePositionsInQueue();
+                                WaitingRoom.moveEveryoneForwardInQueue();
                                 queueUpdated = true;
                             }
 
-                            for (ConcurrentMap.Entry<String, List<String>> room :
-                                ChatEndpoint.rooms.entrySet()) {
-                                if (!room.getValue().contains(first.getChat().getId())) {
-                                    continue;
-                                }
-                                ChatEndpoint.rooms
-                                    .get(room.getKey())
-                                    .remove(first.getChat().getId());
-                                if (first.isVolunteer()) {
-                                    ChatEndpoint.dispatchLeaveMessage(
-                                        String.format("%s har forlatt Chatten", first.getVolunteer().getName()),
-                                        room.getKey()
-                                    );
-                                } else {
-                                    ChatEndpoint.dispatchLeaveMessage(
-                                        "Student har forlatt Chatten",
-                                        room.getKey()
-                                    );
-                                }
-                            }
+                            Rooms
+                                .getAllWithPerson(chatId)
+                                .forEach(room -> {
+                                    Rooms.removePerson(room.getId(), chatId);
+
+                                    String message = closedChat.isVolunteer()
+                                        ? String.format("%s har forlatt Chatten", closedChat.getVolunteer().getName())
+                                        : "Student har forlatt Chatten";
+
+                                    MessageHandler.dispatchLeaveMessage(message, room.getId());
+                                });
+
                             LOG.info("Fjernet fra liste");
                         }
                     }
 
                     if (queueUpdated) {
-                        ChatEndpoint.sendUpdateQueueMessageToVolunteers();
+                        ActiveVolunteers.sendQueueListToAll();
                     }
                 }
             },

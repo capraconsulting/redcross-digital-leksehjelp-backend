@@ -1,7 +1,5 @@
 package no.capraconsulting.chat;
 
-import no.capraconsulting.enums.Chat;
-
 import java.util.ArrayList;
 
 public class StudentInfo {
@@ -12,7 +10,7 @@ public class StudentInfo {
     private String introText;
     private String nickname;
     private ArrayList<String> themes;
-    private Chat.ChatTypeEnum chatType;
+    private ChatType chatType;
     private int positionInQueue;
     private long timePlacedInQueue;
 
@@ -36,11 +34,11 @@ public class StudentInfo {
         this.themes = themes;
     }
 
-    public Chat.ChatTypeEnum getChatType() {
+    public ChatType getChatType() {
         return chatType;
     }
 
-    public void setChatType(Chat.ChatTypeEnum chatType) {
+    public void setChatType(ChatType chatType) {
         this.chatType = chatType;
     }
 

@@ -6,11 +6,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class ChatServlet extends WebSocketServlet {
-    final long TIMEOUT_LIMIT = 900000; //15 min
-    static Logger LOG = LoggerFactory.getLogger(ChatServlet.class);
+    private static final long TIMEOUT_LIMIT = 900000; //15 min
+    private static final Logger LOG = LoggerFactory.getLogger(ChatServlet.class);
+
     @Override
-    public void configure(WebSocketServletFactory factory)
-    {
+    public void configure(WebSocketServletFactory factory) {
         factory.getPolicy().setIdleTimeout(TIMEOUT_LIMIT);
         factory.getExtensionFactory().unregister("permessage-deflate");
         factory.register(ChatEndpoint.class);

@@ -34,15 +34,18 @@ public class MixpanelService {
     }
 
     public void trackEventWithStudentInformation(MixpanelEvent eventType, StudentInfo studentInfo) {
-        trackEventWithDuration(eventType, studentInfo, System.currentTimeMillis() - studentInfo.getTimePlacedInQueue());
+        if (studentInfo != null) {
+            trackEventWithDuration(eventType, studentInfo, System.currentTimeMillis() - studentInfo.getTimePlacedInQueue());
+        }
     }
 
     public void trackEventWithDuration(MixpanelEvent eventType, StudentInfo studentInfo, long duration) {
-        if (eventType.getPropsFromStudentInfo == null) {
-            throw new IllegalArgumentException("Missing getPropsFromStudentInfo from eventType " + eventType.name());
+        if (studentInfo != null) {
+            if (eventType.getPropsFromStudentInfo == null) {
+                throw new IllegalArgumentException("Missing getPropsFromStudentInfo from eventType " + eventType.name());
+            }
+            sendEvent(studentInfo.getUniqueID(), eventType.getPropsFromStudentInfo.apply(studentInfo, duration), eventType);
         }
-
-        sendEvent(studentInfo.getUniqueID(), eventType.getPropsFromStudentInfo.apply(studentInfo, duration), eventType);
     }
 
     private void sendEvent(String uniqueId, JSONObject props, MixpanelEvent eventType) {

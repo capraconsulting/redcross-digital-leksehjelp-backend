@@ -7,7 +7,7 @@ public class DatabaseInitializer {
     public static void init() {
         // Base table for questions
         // A better way to solve states would probably be to put into seperate table
-        String questionTable = 
+        String questionTable =
             "CREATE TABLE QUESTIONS " +
             "(id INTEGER not null IDENTITY(1,1), " +
             "title VARCHAR(255), " +
@@ -18,7 +18,7 @@ public class DatabaseInitializer {
             "subject_id INTEGER not null FOREIGN KEY REFERENCES SUBJECTS(id), " +
             "question_date DATETIME, " +
             "CONSTRAINT [PK_Questions_id] PRIMARY KEY CLUSTERED (id ASC))";
-        
+
         // Setup fulltext search catalog and indexes, Language 1044 = Norwegian
         String createCatalog  = "CREATE FULLTEXT CATALOG SearchCatalog AS DEFAULT";
         String createQuestionIndex  = "CREATE FULLTEXT INDEX ON Questions (question_text Language 1044)  " +
@@ -31,7 +31,7 @@ public class DatabaseInitializer {
             "WITH STOPLIST = SYSTEM";
 
         // Used to store the Azure files for the questions
-        String fileTable = 
+        String fileTable =
             "CREATE TABLE FILES " +
             "(id INTEGER not null IDENTITY(1,1), " +
             "share VARCHAR(255), " +
@@ -87,6 +87,9 @@ public class DatabaseInitializer {
             "volunteer_id VARCHAR(255) not null FOREIGN KEY REFERENCES VOLUNTEERS(id) ON DELETE CASCADE, " +
             "PRIMARY KEY (subject_id, volunteer_id))";
 
+        String informationTable = "CREATE TABLE INFORMATION (id INTEGER not null IDENTITY(1,1) PRIMARY KEY, data nvarchar(4000));" +
+            "ALTER TABLE INFORMATION ADD CONSTRAINT [data record should be formatted as JSON] CHECK (ISJSON(data)=1);";
+
         // Init the database
         try {
             Connection con = Database.INSTANCE.getConnection();
@@ -104,8 +107,9 @@ public class DatabaseInitializer {
             stmt.execute(createQuestionIndex);
             stmt.execute(createAnswerIndex);
             stmt.execute(questionThemesTable);
+            stmt.execute(informationTable);
         } catch (SQLException e) {
             e.printStackTrace();
-        } 
+        }
     }
 }

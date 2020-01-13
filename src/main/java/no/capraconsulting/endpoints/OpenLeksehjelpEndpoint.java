@@ -1,40 +1,47 @@
 package no.capraconsulting.endpoints;
 
-import no.capraconsulting.auth.JwtFilter;
+import com.google.gson.Gson;
+import no.capraconsulting.utils.EndpointUtils;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.Produces;
+import javax.ws.rs.*;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.sql.SQLException;
 
-@Path("/isopen")
+@Path("/information")
 public class OpenLeksehjelpEndpoint {
-    private static boolean IS_OPEN = false;
     private Logger LOG = LoggerFactory.getLogger(OpenLeksehjelpEndpoint.class);
+    private static final Gson gson = new Gson();
 
     @GET
     @Produces({MediaType.APPLICATION_JSON})
+    @Path("/isopen")
     public Response getIsOpen() {
-        JSONObject responseObject = new JSONObject().put("isopen", OpenLeksehjelpEndpoint.IS_OPEN);
-        return Response.ok(responseObject.toString()).build();
+        String query = "SELECT JSON_VALUE(data, '$.isOpen') AS 'isOpen' FROM INFORMATION";
+
+        try {
+            JSONObject response = EndpointUtils.getWithQuery(query);
+            return Response.ok(response.toString()).build();
+        } catch (SQLException e) {
+           LOG.error(e.getMessage());
+           return Response.status(422).build();
+        }
     }
 
-    @POST
-    @JwtFilter
+    @GET
     @Produces({MediaType.APPLICATION_JSON})
-    public Response toggleIsOpen() {
-        OpenLeksehjelpEndpoint.IS_OPEN = !OpenLeksehjelpEndpoint.IS_OPEN;
-        JSONObject responseObject = new JSONObject().put("isopen", OpenLeksehjelpEndpoint.IS_OPEN);
-        if (IS_OPEN) {
-            LOG.info("Leksehjelpen er åpnet");
-        } else {
-            LOG.info("Leksehjelpen er stengt");
+    public Response getInformation() {
+        String query = "SELECT data FROM INFORMATION;";
+
+        try {
+            JSONObject payload  = EndpointUtils.getWithQuery(query);
+            return Response.ok(payload.get("data")).build();
+        } catch (SQLException e) {
+            LOG.error(e.getMessage());
+            return Response.status(422).build();
         }
-        return Response.ok(responseObject.toString()).build();
     }
 }

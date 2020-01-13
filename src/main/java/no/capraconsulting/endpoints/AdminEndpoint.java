@@ -7,6 +7,8 @@ import no.capraconsulting.auth.JwtFilter;
 import no.capraconsulting.client.MSGraphClient;
 import no.capraconsulting.domain.Information;
 import no.capraconsulting.domain.Role;
+import no.capraconsulting.domain.Subject;
+import no.capraconsulting.domain.Theme;
 import no.capraconsulting.domain.Volunteer;
 import no.capraconsulting.domain.VolunteerRole;
 import no.capraconsulting.repository.AdminRepository;
@@ -61,6 +63,39 @@ public class AdminEndpoint {
     public Response deleteVolunteer(@PathParam("userId") String userId) {
         AdminRepository.deleteVolunteer(userId);
        return Response.ok().build();
+    }
+
+    @POST
+    @Path("/subjects/")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response addSubject(String payload) {
+        Subject subject = gson.fromJson(payload, Subject.class);
+        AdminRepository.addSubject(subject.subjectTitle, subject.isMestring);
+        return Response.ok().build();
+    }
+
+    @DELETE
+    @Path("/subjects/{id}")
+    @JwtFilter
+    public Response deleteSubject(@PathParam("id") Integer id) {
+        AdminRepository.deleteSubject(id);
+        return Response.ok().build();
+    }
+
+    @POST
+    @Path("/themes/")
+    @Consumes({MediaType.APPLICATION_JSON})
+    public Response addTheme(String payload){
+        Theme theme = gson.fromJson(payload, Theme.class);
+        AdminRepository.addTheme(theme.themeTitle, theme.subjectId);
+        return Response.ok().build();
+    }
+
+    @DELETE
+    @Path("/themes/{id}")
+    public Response deleteTheme(@PathParam("id") Integer id){
+        AdminRepository.deleteTheme(id);
+        return Response.ok().build();
     }
 
     @PUT

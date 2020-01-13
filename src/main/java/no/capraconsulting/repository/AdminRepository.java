@@ -56,6 +56,56 @@ public class AdminRepository {
         }
     }
 
+    public static void addSubject(String subjectTitle, int isMestring) {
+        String query = "INSERT INTO SUBJECTS (subject, is_mestring) VALUES (?, ?)";
+        try {
+            Database.INSTANCE.manipulateQuery(query, false, subjectTitle, isMestring);
+        } catch (SQLException e) {
+            LOG.error(e.getMessage());
+            throw new InternalServerErrorException("Failed to execute query ", e);
+        }
+    }
+
+    public static void deleteSubject(Integer id) {
+        String query = "DELETE FROM THEMES WHERE subject_id = ?; " +
+            "DELETE FROM VOLUNTEER_SUBJECTS WHERE subject_id = ?; " +
+            "DELETE FROM SUBJECTS WHERE id = ?;";
+
+        try {
+            Database.INSTANCE.manipulateQuery(query, false, id, id, id);
+        } catch (SQLException e) {
+            LOG.error(e.getMessage());
+            throw new InternalServerErrorException("Failed to execute query ", e);
+        }
+    }
+
+    public static void addTheme(String themeTitle, int subjectId) {
+        String query = "INSERT INTO THEMES (theme, subject_id) VALUES (?, ?)";
+
+        try {
+            if (!themeTitle.isEmpty()) {
+                Database.INSTANCE.manipulateQuery(query, false, themeTitle, subjectId);
+            } else {
+                throw new IllegalArgumentException("Missing theme title");
+            }
+        } catch (SQLException e) {
+            LOG.error(e.getMessage());
+            throw new InternalServerErrorException("Failed to execute query ", e);
+        }
+    }
+
+    public static void deleteTheme(Integer id) {
+        String query = "DELETE FROM QUESTION_THEMES WHERE theme_id = ?; " +
+            "DELETE FROM THEMES WHERE id = ?";
+
+        try {
+            Database.INSTANCE.manipulateQuery(query, false, id, id);
+        } catch (SQLException e) {
+            LOG.error(e.getMessage());
+            throw new InternalServerErrorException("Failed to execute query ", e);
+        }
+    }
+
     public static void updateIsOpen(boolean isOpen) {
         String insertInformation = "UPDATE INFORMATION SET data=JSON_MODIFY(data, '$.isOpen', ?)";
 

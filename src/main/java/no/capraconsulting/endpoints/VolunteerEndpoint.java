@@ -12,10 +12,8 @@ import javax.ws.rs.core.Context;
 import org.jose4j.jwt.JwtClaims;
 import org.jose4j.jwt.MalformedClaimException;
 import no.capraconsulting.db.Database;
-import no.capraconsulting.auth.JwtFilter;
 import javax.sql.RowSet;
 import java.sql.SQLException;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import no.capraconsulting.utils.EndpointUtils;
 
@@ -50,9 +48,9 @@ public final class VolunteerEndpoint {
     @GET
     @Path("/self")
     @Produces({MediaType.APPLICATION_JSON})
-    public Response listVolunteers(@Context ContainerRequestContext requestContext) {
+    public Response getSelf(@Context ContainerRequestContext requestContext) {
         String query =
-            "SELECT id, name, bio_text, email, img_url " +
+            "SELECT id, name, bio_text, email, img_url, role " +
             "FROM Volunteers " +
             "WHERE id = ?";
 
@@ -127,11 +125,11 @@ public final class VolunteerEndpoint {
         String query = "" +
             "SELECT Subjects.id, subject, is_mestring " +
             "FROM Subjects " +
-            "JOIN Volunteer_Subjects ON Volunteer_Subjects.subject_id = Subjects.id " + 
+            "JOIN Volunteer_Subjects ON Volunteer_Subjects.subject_id = Subjects.id " +
             "JOIN Volunteers ON Volunteer_Subjects.volunteer_id = Volunteers.id ";
 
         try {
-            RowSet result; 
+            RowSet result;
             if (!allVolunteers) {
                 JwtClaims claims = (JwtClaims) requestContext.getProperty("claims");
                 String oid = claims.getClaimValue("oid", String.class);
@@ -154,7 +152,7 @@ public final class VolunteerEndpoint {
     public Response addSubject(String payload, @Context ContainerRequestContext requestContext) {
         JSONObject data = new JSONObject(payload);
         JSONArray subjects = data.getJSONArray("subjects");
-        
+
         // First delete the old subjects
         try {
             String query = "DELETE FROM Volunteer_Subjects where volunteer_id = ?";
@@ -171,7 +169,7 @@ public final class VolunteerEndpoint {
             int subjectID = subjects.getInt(i);
 
             String query = "INSERT INTO Volunteer_Subjects (subject_id, volunteer_id) VALUES (?, ?)";
-            
+
             try {
                 JwtClaims claims = (JwtClaims) requestContext.getProperty("claims");
                 String oid = claims.getClaimValue("oid", String.class);

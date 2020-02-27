@@ -146,7 +146,7 @@
     <dependency>
       <groupId>com.microsoft.sqlserver</groupId>
       <artifactId>mssql-jdbc</artifactId>
-      <version>7.2.2.jre11</version>
+      <version>8.2.1.jre13</version>
     </dependency>
     <dependency>
       <groupId>com.zaxxer</groupId>
